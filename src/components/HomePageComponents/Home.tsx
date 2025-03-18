@@ -284,6 +284,52 @@ const HomeComnponent = () => {
         return <DrawerBody>{children}</DrawerBody>
     };
 
+    const [sortConfig, setSortConfig] = useState<{ key: string | null; direction: string | null }>({
+        key: null,
+        direction:null
+    });
+
+
+    // Sorting function
+    const sortData = (key: string | null) => {
+        let direction: string | null = 'ascending';
+
+        if (sortConfig.key === key) {
+            if (sortConfig.direction === 'ascending') {
+                direction = 'descending';
+            } else if (sortConfig.direction === 'descending') {
+                // Reset to original order
+                direction = null;
+                key = null;
+            }
+        }
+
+        setSortConfig({ key, direction });
+    };
+
+    // Get sorted data
+    const getSortedData = () => {
+        if (!sortConfig.key || !sortConfig.direction) return cryptoData;
+
+        return [...cryptoData].sort((a, b) => {
+
+            // @ts-ignore
+            if (a[sortConfig.key] < b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            // @ts-ignore
+            if (a[sortConfig.key] > b[sortConfig.key]) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
+            return 0;
+        });
+    };
+
+    const getSortIndicator = (key: string) => {
+        if (sortConfig.key !== key) return '';
+        return sortConfig.direction === 'ascending' ? '↑' : '↓';
+    };
+
 
     return (
 
@@ -360,21 +406,46 @@ const HomeComnponent = () => {
                 </div>
                 <table className='flex flex-col gap-1 mt-5'>
                     <thead className='my-4'>
-                        <tr className='flex justify-between items-center px-4'>
-                            <th className='text-white flex justify-start w-[250px] pl-5'>Currency</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Price</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Change</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Market Cap</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Volume (24h)</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Supply</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Chart</th>
-                            <th className='text-white flex justify-start w-[170px] pl-5'>Action</th>
-                        </tr>
+                    <tr className='flex justify-between items-center px-4'>
+                        <th className='text-white flex justify-start w-[320px] pl-5'>Currency</th>
+                        <th
+                            className='text-white flex justify-start w-[170px] pl-5 cursor-pointer'
+                            onClick={() => sortData('current_price')}
+                        >
+                            Price {getSortIndicator('current_price')}
+                        </th>
+                        <th
+                            className='text-white flex justify-start w-[170px] pl-5 cursor-pointer'
+                            onClick={() => sortData('price_change_percentage_24h')}
+                        >
+                            Change {getSortIndicator('price_change_percentage_24h')}
+                        </th>
+                        <th
+                            className='text-white flex justify-start w-[170px] pl-5 cursor-pointer'
+                            onClick={() => sortData('market_cap')}
+                        >
+                            Market Cap {getSortIndicator('market_cap')}
+                        </th>
+                        <th
+                            className='text-white flex justify-start w-[170px] pl-5 cursor-pointer'
+                            onClick={() => sortData('total_volume')}
+                        >
+                            Volume (24h) {getSortIndicator('total_volume')}
+                        </th>
+                        <th
+                            className='text-white flex justify-start w-[170px] pl-5 cursor-pointer'
+                            onClick={() => sortData('total_supply')}
+                        >
+                            Supply {getSortIndicator('total_supply')}
+                        </th>
+                        <th className='text-white flex justify-start w-[170px] pl-5'>Chart</th>
+                        <th className='text-white flex justify-start w-[170px] pl-5'>Action</th>
+                    </tr>
                     </thead>
                     <tbody>
-                    {cryptoData.slice(0,20).map(item => {
+                    {getSortedData().slice(0, 20).map(item => {
                         return <tr key={item.id} className='flex justify-between items-center px-4 py-3'>
-                            <th className='text-white flex justify-start items-center gap-2 w-[250px] pl-3'>
+                            <th className='text-white flex justify-start items-center gap-2 w-[320px] pl-3'>
                                 <img src={item.image} className='w-10 h-10 rounded-full overflow-hidden'/>
                                 <div className='flex flex-col gap-0 items-start'>
                                     <div className='font-bold text-white text-lg'>{item.name}</div>
